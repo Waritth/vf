@@ -424,7 +424,7 @@ const NODES = [
   },
   {
     id: 'genz', label: 'Gen Z Incubator', short: 'Gen Z',
-    budget: 96, session: 2, status: 'funded', icon: '🚀',
+    budget: 96, session: 2, status: 'pending', icon: '🚀',
     summary: 'บ่มเพาะผู้ประกอบการรุ่นใหม่ · ต่อยอดจากทักษะอาชีพไปสู่ธุรกิจและตลาดต่างประเทศ',
     detail: 'มุ่งสร้างผู้ประกอบการรุ่นใหม่ในพื้นที่กองทุนหมู่บ้าน ใช้ทักษะอาชีพเป็น input · เข้าถึงสินเชื่อและ Credit Scoring ผ่านธนาคารกองทุนหมู่บ้าน',
     outputs: 'จำนวนสตาร์ทอัปใหม่ · อัตราการอยู่รอดของธุรกิจ · มูลค่าการลงทุนตั้งต้น'
@@ -561,10 +561,12 @@ function radiusOf(n) {
 }
 function colorOf(n) {
   if (n.status === 'coming_soon') return '#3a4258';
+  if (n.status === 'pending') return '#3a2d18';
   return n.session === 1 ? '#1e3a46' : '#3a2d18';
 }
 function strokeOf(n) {
   if (n.status === 'coming_soon') return '#64748b';
+  if (n.status === 'pending') return '#f5c26b';
   return n.session === 1 ? '#5eead4' : '#f5c26b';
 }
 
@@ -605,7 +607,7 @@ function initGraph() {
         .attr('r', d => radiusOf(d))
         .attr('fill', d => colorOf(d))
         .attr('stroke', d => strokeOf(d))
-        .attr('stroke-dasharray', d => d.status === 'coming_soon' ? '4 3' : null);
+        .attr('stroke-dasharray', d => (d.status === 'coming_soon' || d.status === 'pending') ? '4 3' : null);
       g.append('text')
         .attr('class', 'icon')
         .attr('text-anchor', 'middle')
@@ -620,7 +622,11 @@ function initGraph() {
       g.append('text')
         .attr('class', 'budget')
         .attr('dy', d => radiusOf(d) + 32)
-        .text(d => d.budget ? `${d.budget}M` : 'coming soon');
+        .text(d => {
+          if (d.status === 'coming_soon') return 'coming soon';
+          if (d.status === 'pending') return `${d.budget}M · รองบ`;
+          return `${d.budget}M`;
+        });
       return g;
     });
 
@@ -717,9 +723,11 @@ function openPanel(n) {
   const sessionPill = n.status === 'coming_soon'
     ? '<span class="dp-pill coming">Coming soon</span>'
     : `<span class="dp-pill session-${n.session}">Session ${n.session}</span>`;
-  const budgetPill = n.budget
-    ? `<span class="dp-pill budget">${n.budget.toLocaleString()} ล้านบาท</span>`
-    : '<span class="dp-pill coming">รองบใหม่</span>';
+  const budgetPill = n.status === 'pending'
+    ? `<span class="dp-pill coming">${n.budget.toLocaleString()} ล้านบาท · รองบปี 2570</span>`
+    : n.budget
+      ? `<span class="dp-pill budget">${n.budget.toLocaleString()} ล้านบาท</span>`
+      : '<span class="dp-pill coming">รองบใหม่</span>';
 
   dpBody.innerHTML = `
     <div class="dp-icon">${n.icon}</div>
