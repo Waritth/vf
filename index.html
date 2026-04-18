@@ -425,6 +425,9 @@ body {
   color: var(--accent, var(--blue));
   font-weight: 700;
 }
+/* plain-list: drop the default ▸ marker + extra padding for custom-styled lists */
+.detail-block .plain-list li::before { content: none; }
+.detail-block .plain-list li { padding-left: 14px; }
 .detail-block .kv { font-size: 13.5px; }
 .detail-block .kv-row {
   display: flex;
@@ -697,12 +700,12 @@ footer strong { color: var(--navy); }
   <section class="session session-2" id="session-2">
     <div class="session-badge">⏳ SESSION 2 · รองบ 70 ล้าน</div>
     <div class="session-title">งบใหม่ · รอการอนุมัติ</div>
-    <div class="session-meta">3 โครงการ · เชื่อมระบบเดิม + ขยายตลาดต่างประเทศ</div>
+    <div class="session-meta">3 โครงการ · Village Bank + Cloud Infra + Gen Z Incubator</div>
   </section>
   <div class="grid" id="grid-s2"></div>
 
   <footer>
-    <p><strong>จุดเชื่อมโยงสำคัญ:</strong> Gen Z Incubator → VF Brand → China Market (เส้นบน) · Digital Platform + ทักษะอาชีพ 24.2 → E-Catalog → Normal Trade (เส้นกลาง) · 18.65 = Capacity Building ล้วน (เส้นล่าง)</p>
+    <p><strong>จุดเชื่อมโยงสำคัญ:</strong> Village Bank = marketplace + Credit Scoring สำหรับสมาชิกทั้ง VF · ชุมชนเมือง · Gen Z · กาแฟ   |   Cloud (Agency-Owned) = โครงสร้างพื้นฐานรองรับทุกระบบ ลด vendor lock-in   |   Digital Platform = software backbone เชื่อม 7 โครงการที่เหลือ</p>
     <p style="margin-top:10px;">© 2569-2570 · สทบ. · Interactive Dashboard · รองรับการแสดงผลบนเบราว์เซอร์สมัยใหม่ทุกรุ่น</p>
   </footer>
 </div>
@@ -928,26 +931,54 @@ const projects = [
   {
     id: 7, session: 2, available: false,
     num: '7',
-    accent: '#707a8b', accent2: '#4a5465',
-    title: 'ธนาคาร (งบใหม่)',
-    shortName: 'ธนาคาร',
+    accent: '#0891b2', accent2: '#164e63',
+    title: 'ธนาคารกองทุนหมู่บ้าน (งบใหม่)',
+    shortName: 'Village Bank',
     budget: 'รองบ',
-    desc: 'จุดเชื่อมทุนเข้าสู่สมาชิกกองทุนชุมชนเมือง · Entry point สำหรับโครงการ 24.2 และ 18.65',
-    tags: ['งบใหม่', 'รอรายละเอียด'],
-    objective: '(ยังไม่มีรายละเอียด) — ธนาคารกองทุนเป็นจุดเชื่อมทุนเข้าสู่สมาชิกกองทุนชุมชนเมือง ซึ่งเป็น Entry point สำหรับโครงการ 24.2 และ 18.65',
-    comingSoon: true
+    desc: 'ธนาคารกองทุน + แพลตฟอร์มการค้าครบวงจร · Credit Scoring · ลดหนี้นอกระบบ · รองรับ พ.ร.บ. กองทุนหมู่บ้าน พ.ศ. 2544',
+    tags: ['งบใหม่', 'Village Bank', 'Credit Scoring', 'Marketplace', '7 ระบบงาน'],
+    target: 'สมาชิกกองทุนหมู่บ้านและชุมชนเมืองทั่วประเทศ · เจ้าหน้าที่กองทุนหมู่บ้าน · สทบ. ในบทบาทผู้กำกับและบริหารงบภาครัฐ',
+    objective: 'ยกระดับกองทุนหมู่บ้านสู่ "ธนาคารกองทุนหมู่บ้าน" ที่เป็นกลไกการเงินชุมชนแบบโปร่งใส ตรวจสอบได้ พร้อม marketplace ขายสินค้าสมาชิก (ใน/ต่างประเทศ) เพื่อเสริมสภาพคล่องและสร้างรายได้ให้ชุมชน · ลดการพึ่งพาหนี้นอกระบบ · วางรากฐานข้อมูล Credit Scoring สำหรับสมาชิกในอนาคต',
+    scope: [
+      'ระบบแกนหลักของแพลตฟอร์ม — ระบบสมาชิก (IAM), Marketplace / Storefront, Order Management (OMS), Cart & Checkout',
+      'ระบบการเงินและชำระเงิน — Payment Gateway, Accounting & Finance Reporting',
+      'ระบบสินเชื่อ / การเงินชุมชน — Loan Application & Approval, Loan Management System (LMS), Credit Scoring',
+      'ระบบสนับสนุนการดำเนินงาน — Admin Console, CMS, Helpdesk, Review & Rating',
+      'ระบบข้อมูลและการวิเคราะห์ — BI Dashboard, Data Warehouse, User Analytics',
+      'ระบบความมั่นคงปลอดภัย — Data Protection, Backup & Disaster Recovery, Fraud Detection',
+      'ระบบโครงสร้างพื้นฐาน — Cloud Hosting, Database, API Gateway, Web/Mobile App'
+    ],
+    kpis: [{num:'7', txt:'ระบบงานหลัก'}, {num:'79,610', txt:'กองทุนเป้าหมาย'}, {num:'Credit', txt:'Scoring พร้อมใช้'}],
+    extraBenefits: [
+      'ต่อสมาชิก — เข้าถึงสินเชื่อเป็นธรรม, เงินทุนหมุนเวียนพัฒนาอาชีพ, ความรู้/วินัยทางการเงิน, ติดตามสถานะสินเชื่อได้',
+      'ต่อ สทบ. — ยกระดับบทบาทเป็นกลไกการเงินชุมชนที่ตรวจสอบได้, บริหารงบภาครัฐอย่างมีประสิทธิภาพ, ข้อมูลกลางสำหรับตัดสินใจเชิงนโยบาย, ลดงาน manual'
+    ]
   },
   {
     id: 8, session: 2, available: false,
     num: '8',
-    accent: '#a670c4', accent2: '#6c3f8a',
-    title: 'เปิดตลาดจีน (งบใหม่)',
-    shortName: 'ตลาดจีน',
+    accent: '#7c3aed', accent2: '#4c1d95',
+    title: 'Cloud Infrastructure (งบใหม่)',
+    shortName: 'Cloud (Agency-Owned)',
     budget: 'รองบ',
-    desc: 'Synergy กับ CJ และ The Mall · ช่องทาง Portal (Outbound) เชื่อมระบบ VF · ปลายทางตลาดจีน',
-    tags: ['งบใหม่', 'CJ + The Mall', 'Outbound'],
-    objective: '(ยังไม่มีรายละเอียด) — เปิดตลาดจีนผ่าน Synergy กับ CJ และ The Mall · ช่องทาง Portal (Outbound) เชื่อมระบบ VF สู่ China Market',
-    comingSoon: true
+    desc: 'โครงสร้างพื้นฐานคลาวด์ที่ สทบ. เป็นเจ้าของ · Enterprise Service Continuity + Digital Sovereignty · ลด vendor lock-in',
+    tags: ['งบใหม่', 'Agency-Owned', 'Digital Sovereignty', 'Zero Downtime', 'PDPA'],
+    target: 'ระบบ VFM และระบบงานทั้งหมดของ สทบ. · ฝ่ายไอที สทบ. · ผู้บริหารที่ต้องตัดสินใจเชิงนโยบาย',
+    objective: 'เปลี่ยนจากการใช้งบ "เช่าทิ้ง" รายปี/โครงการ ซึ่ง Cloud Account ผูกติดกับผู้รับจ้าง มาเป็นการสร้าง "ทรัพย์สินดิจิทัล" ถาวรของ สทบ. (Agency-Owned Asset) · ยกระดับความมั่นคงปลอดภัยของระบบ VFM และระบบงานทุกตัว · รองรับ Zero Downtime Transition เมื่อเปลี่ยนผู้รับจ้างในอนาคต',
+    scope: [
+      'ย้ายจาก Vendor-Owned Cloud Account → Agency-Owned (สทบ. ถือ Root/Admin)',
+      'ข้อมูลและสิทธิ์การเข้าถึงสูงสุดอยู่ภายใต้การควบคุมของ สทบ.',
+      'วางแผนงบประมาณแยก โครงสร้างพื้นฐาน (CapEx) ออกจากค่าแรงที่ปรึกษา (OpEx)',
+      'ทรัพยากรคอมพิวเตอร์ใช้ร่วมข้ามโครงการ (เหลือจากโครงการ A → ใช้ในโครงการ B ได้ทันที)',
+      'มาตรฐานเทคนิคชุดเดียวทั้งองค์กร (Technical Standardization)',
+      'Central Dashboard สำหรับเรียกดูสถานะทุกระบบจากจุดเดียว'
+    ],
+    kpis: [{num:'0', txt:'Downtime ตอนเปลี่ยนผู้รับจ้าง'}, {num:'100%', txt:'Data Control'}, {num:'PDPA', txt:'Compliant'}],
+    extraBenefits: [
+      'ความคุ้มค่างบประมาณ — ลดรายจ่ายซ้ำซ้อน, TCO ระยะยาวต่ำกว่าเช่ารายปี',
+      'ประสิทธิภาพ — Zero Downtime Transition, Agility & Speed เปิดระบบใหม่เร็ว, Standardization',
+      'ความมั่นคงปลอดภัย — Absolute Data Control, Cyber Resilience (Backup + DR), PDPA Compliance, Institutional Memory ไม่หายไปกับผู้รับจ้าง'
+    ]
   }
 ];
 
@@ -1057,6 +1088,27 @@ function openModal(id) {
       html += `<div class="kv-row"><span class="k">${r.k}</span><span class="v">${r.v}</span></div>`;
     });
     html += `</div></div>`;
+  }
+
+  // Scope (list of system modules / work packages)
+  if (p.scope && p.scope.length) {
+    html += `<div class="detail-block"><h3>ขอบเขตงาน</h3><ul class="plain-list" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;">`;
+    p.scope.forEach((item, i) => {
+      html += `<li style="display:flex;gap:12px;padding:12px 14px;background:#f5f7fb;border-left:3px solid var(--accent);border-radius:6px;font-size:13.5px;line-height:1.6;color:#1a1a2e;">
+        <span style="flex:0 0 28px;height:28px;border-radius:50%;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;font-family:'Prompt',sans-serif;">${i + 1}</span>
+        <span style="flex:1;">${item}</span>
+      </li>`;
+    });
+    html += `</ul></div>`;
+  }
+
+  // Extra benefits
+  if (p.extraBenefits && p.extraBenefits.length) {
+    html += `<div class="detail-block"><h3>ประโยชน์ / ผลลัพธ์คาดหวัง</h3><ul class="plain-list" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">`;
+    p.extraBenefits.forEach(b => {
+      html += `<li style="padding:12px 14px;background:#f5f7fb;border-radius:6px;font-size:13.5px;line-height:1.65;color:#1a1a2e;"><span style="color:var(--accent);margin-right:8px;font-weight:700;">✦</span>${b}</li>`;
+    });
+    html += `</ul></div>`;
   }
 
   body.innerHTML = html;

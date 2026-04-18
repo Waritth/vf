@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>แผนผังความเชื่อมโยง · สทบ. ปี 2569-2570</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+  :root {
+    --bg-0:       #070a14;
+    --bg-1:       #0d1424;
+    --bg-2:       #111a30;
+    --panel:      rgba(20, 28, 50, 0.78);
+    --panel-br:   rgba(255,255,255,0.08);
+    --text-1:     #f4f6fc;
+    --text-2:     #aab1c5;
+    --text-3:     #6e7691;
+    --accent:     #f5c26b;
+    --accent-2:   #5eead4;
+
+    --funding:    #60a5fa;  /* เงินทุน */
+    --skills:     #fb923c;  /* ทักษะ */
+    --market:     #4ade80;  /* ตลาด */
+    --platform:   #c084fc;  /* Platform */
+    --structure:  #94a3b8;  /* โครงสร้าง */
+
+    --session-1:  #5eead4;
+    --session-2:  #f5c26b;
+    --coming:     #64748b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    font-family: 'Sarabun', system-ui, sans-serif;
+    color: var(--text-1);
+    background:
+      radial-gradient(1200px 800px at 20% -10%, #152244 0%, transparent 60%),
+      radial-gradient(900px 700px at 110% 110%, #1a1a3d 0%, transparent 55%),
+      linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 100%);
+    overflow: hidden;
+  }
+
+  h1, h2, h3, h4, .prompt { font-family: 'Prompt', system-ui, sans-serif; letter-spacing: .01em; }
+
+  /* ---------- Layout shell ---------- */
+  .app {
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    padding: 18px 28px 14px;
+    border-bottom: 1px solid var(--panel-br);
+    background: linear-gradient(180deg, rgba(18,24,44,0.75), rgba(18,24,44,0.35));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .hero-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border: 1px solid rgba(245,194,107,.35);
+    background: rgba(245,194,107,.08);
+    color: var(--accent);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Prompt', sans-serif;
+  }
+  .hero h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 2px 0 0;
+  }
+  .hero-sub {
+    color: var(--text-2);
+    font-size: 13px;
+    margin-top: 2px;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .btn {
+    appearance: none;
+    border: 1px solid var(--panel-br);
+    background: rgba(255,255,255,0.04);
+    color: var(--text-1);
+    padding: 8px 14px;
+    border-radius: 10px;
+    font: 600 13px 'Prompt', sans-serif;
+    cursor: pointer;
+    transition: all .15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); }
+  .btn.primary {
+    background: linear-gradient(135deg, var(--accent), #e8a94a);
+    color: #2a1a00;
+    border-color: transparent;
+  }
+  .btn.primary:hover { filter: brightness(1.05); }
+
+  /* ---------- Control bar ---------- */
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 12px 28px;
+    border-bottom: 1px solid var(--panel-br);
+    background: rgba(10,14,28,0.55);
+    backdrop-filter: blur(8px);
+  }
+  .legend {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 13px;
+    border: 1px solid var(--panel-br);
+    background: rgba(255,255,255,.04);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-2);
+    cursor: pointer;
+    user-select: none;
+    transition: all .12s ease;
+  }
+  .chip:hover { color: var(--text-1); border-color: rgba(255,255,255,.18); }
+  .chip.active { color: var(--text-1); background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.22); }
+  .chip .dot {
+    width: 10px; height: 10px; border-radius: 999px;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.04);
+  }
+  .chip.muted .dot { opacity: .35; }
+
+  .controls-right { display: flex; gap: 10px; align-items: center; }
+  .hint { font-size: 11.5px; color: var(--text-3); font-family: 'Prompt', sans-serif; }
+
+  /* ---------- Graph canvas ---------- */
+  .canvas-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+  svg#graph {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: grab;
+  }
+  svg#graph:active { cursor: grabbing; }
+
+  .link {
+    fill: none;
+    stroke-opacity: .55;
+    transition: stroke-opacity .2s, stroke-width .2s;
+  }
+  .link.dim { stroke-opacity: .08; }
+  .link.hi  { stroke-opacity: 1;   stroke-width: 2.6; }
+
+  .node circle {
+    cursor: pointer;
+    transition: filter .2s, stroke-width .2s;
+    stroke: rgba(255,255,255,0.1);
+    stroke-width: 1.5;
+  }
+  .node.hi circle { stroke: #ffffff; stroke-width: 2.5; filter: brightness(1.1); }
+  .node.dim  { opacity: .25; }
+
+  .node text.title {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    fill: #fff;
+    text-anchor: middle;
+    pointer-events: none;
+    paint-order: stroke;
+    stroke: rgba(0,0,0,0.7);
+    stroke-width: 3;
+    stroke-linejoin: round;
+  }
+  .node text.budget {
+    font-family: 'Sarabun', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    fill: var(--text-2);
+    text-anchor: middle;
+    pointer-events: none;
+    paint-order: stroke;
+    stroke: rgba(0,0,0,0.6);
+    stroke-width: 2.5;
+  }
+
+  .edge-label {
+    font-family: 'Sarabun', sans-serif;
+    font-size: 10.5px;
+    fill: var(--text-2);
+    text-anchor: middle;
+    paint-order: stroke;
+    stroke: var(--bg-0);
+    stroke-width: 3;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .edge-label.show { opacity: 0.95; }
+
+  /* ---------- Detail panel ---------- */
+  .detail-panel {
+    position: absolute;
+    top: 0; right: 0;
+    width: 360px;
+    max-width: 92vw;
+    height: 100%;
+    background: var(--panel);
+    border-left: 1px solid var(--panel-br);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    padding: 24px;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform .32s cubic-bezier(.4,0,.2,1);
+    z-index: 20;
+    box-shadow: -20px 0 50px rgba(0,0,0,0.35);
+  }
+  .detail-panel.open { transform: translateX(0); }
+
+  .dp-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--panel-br);
+    background: rgba(255,255,255,0.04);
+    color: var(--text-2);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .dp-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+  .dp-icon {
+    font-size: 38px;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+  .dp-title {
+    font-size: 20px;
+    font-weight: 700;
+    font-family: 'Prompt', sans-serif;
+    color: #fff;
+    margin-bottom: 4px;
+    padding-right: 40px;
+  }
+  .dp-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .dp-pill {
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-family: 'Prompt', sans-serif;
+  }
+  .dp-pill.session-1 { background: rgba(94,234,212,.15); color: var(--session-1); border: 1px solid rgba(94,234,212,.3); }
+  .dp-pill.session-2 { background: rgba(245,194,107,.15); color: var(--session-2); border: 1px solid rgba(245,194,107,.3); }
+  .dp-pill.coming    { background: rgba(100,116,139,.2);   color: var(--coming);    border: 1px solid rgba(100,116,139,.35); }
+  .dp-pill.budget    { background: rgba(255,255,255,.05);  color: #fff;              border: 1px solid rgba(255,255,255,.12); }
+
+  .dp-section { margin-top: 16px; }
+  .dp-section h4 {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 8px;
+  }
+  .dp-section p {
+    font-size: 13.5px;
+    color: var(--text-1);
+    line-height: 1.65;
+  }
+
+  .dp-connections li {
+    list-style: none;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    background: rgba(255,255,255,.03);
+    border-left: 3px solid;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .dp-connections li:hover { background: rgba(255,255,255,.07); }
+  .dp-connections .conn-label {
+    color: var(--text-3);
+    font-size: 11px;
+    display: block;
+    margin-bottom: 2px;
+    font-family: 'Prompt', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .dp-connections .conn-target { color: #fff; font-weight: 500; }
+
+  /* ---------- Footer ---------- */
+  .footer {
+    padding: 8px 28px;
+    border-top: 1px solid var(--panel-br);
+    font-size: 11.5px;
+    color: var(--text-3);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    background: rgba(10,14,28,0.55);
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 720px) {
+    .hero { padding: 14px 16px 10px; }
+    .hero h1 { font-size: 18px; }
+    .hero-sub { font-size: 12px; }
+    .controls { padding: 10px 16px; }
+    .detail-panel { width: 100%; }
+    .footer { padding: 8px 16px; font-size: 10.5px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ HERO ============ -->
+  <header class="hero">
+    <div class="hero-title">
+      <div>
+        <span class="hero-badge">● Mind Map · ปี 2569-2570</span>
+        <h1>แผนผังความเชื่อมโยงโครงการ สทบ.</h1>
+        <div class="hero-sub">Network graph — ลาก · คลิก · zoom เพื่อสำรวจ ecosystem 8 โครงการ · 350.11M</div>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <button class="btn" id="btnReset">↺ จัดเรียงใหม่</button>
+      <button class="btn primary" onclick="window.location.href='index.html'">← Dashboard</button>
+    </div>
+  </header>
+
+  <!-- ============ CONTROLS ============ -->
+  <div class="controls">
+    <div class="legend" id="legendChips">
+      <!-- chips injected by JS -->
+    </div>
+    <div class="controls-right">
+      <span class="hint">💡 คลิก node เพื่อดูรายละเอียด · ลากจัดตำแหน่ง · scroll เพื่อ zoom</span>
+    </div>
+  </div>
+
+  <!-- ============ GRAPH ============ -->
+  <div class="canvas-wrap">
+    <svg id="graph"></svg>
+
+    <!-- Detail side panel -->
+    <aside class="detail-panel" id="detailPanel">
+      <button class="dp-close" onclick="closePanel()">×</button>
+      <div id="dpBody"></div>
+    </aside>
+  </div>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div>Esc ปิด panel · R จัดเรียงใหม่ · สร้างด้วย D3.js</div>
+    <div>สทบ. · แผนผังโครงการ ปี 2569-2570</div>
+  </footer>
+</div>
+
+<script>
+/* ========================================================================
+   DATA
+   ======================================================================== */
+const NODES = [
+  {
+    id: 'vf', label: 'กองทุนหมู่บ้าน (VF)', short: 'VF',
+    budget: 153, session: 1, status: 'funded', icon: '🏘️',
+    summary: 'เงินทุนหมุนเวียน 79,610 กองทุนทั่วประเทศ — แกนหลักของระบบ สทบ.',
+    detail: 'งบประมาณสูงสุดของ Session 1 รับบทเป็นแกนกลางที่โครงการอื่น ๆ ต่อยอดไปอีกหลายทิศทาง ทั้งเงินทุน ทักษะ การเงินชุมชน และรุ่นใหม่',
+    outputs: 'กองทุนหมู่บ้านได้รับงบหมุนเวียน · ประชาชนเข้าถึงสินเชื่อฐานราก'
+  },
+  {
+    id: 'genz', label: 'Gen Z Incubator', short: 'Gen Z',
+    budget: 96, session: 2, status: 'funded', icon: '🚀',
+    summary: 'บ่มเพาะผู้ประกอบการรุ่นใหม่ · ต่อยอดจากทักษะอาชีพไปสู่ธุรกิจและตลาดต่างประเทศ',
+    detail: 'มุ่งสร้างผู้ประกอบการรุ่นใหม่ในพื้นที่กองทุนหมู่บ้าน ใช้ทักษะอาชีพเป็น input · เข้าถึงสินเชื่อและ Credit Scoring ผ่านธนาคารกองทุนหมู่บ้าน',
+    outputs: 'จำนวนสตาร์ทอัปใหม่ · อัตราการอยู่รอดของธุรกิจ · มูลค่าการลงทุนตั้งต้น'
+  },
+  {
+    id: 'digital', label: 'Digital Platform', short: 'Digital',
+    budget: 37, session: 1, status: 'funded', icon: '💻',
+    summary: 'ระบบดิจิทัลกลาง — เชื่อม 7 โครงการที่เหลือทั้งหมด เป็น backbone ของ ecosystem',
+    detail: 'Infrastructure กลางรองรับทุกโครงการ ตั้งแต่บริหารกองทุน · LMS ทักษะ · e-commerce กาแฟ · ระบบชุมชนเมือง · บ่มเพาะ Gen Z · และ core banking ของธนาคารกองทุนหมู่บ้าน · ตั้งอยู่บน Cloud Infrastructure ของ สทบ.',
+    outputs: 'จำนวนผู้ใช้ระบบ · Uptime · จำนวนธุรกรรม'
+  },
+  {
+    id: 'skills', label: 'พัฒนาทักษะอาชีพ', short: 'ทักษะอาชีพ',
+    budget: 24.2, session: 1, status: 'funded', icon: '🎓',
+    summary: 'ฝึกทักษะอาชีพให้สมาชิกกองทุน — feed เข้าสู่กาแฟและ Gen Z',
+    detail: 'ฝึกอบรมทักษะในชุมชน ใช้งบของ VF เป็นฐาน แล้วส่งผู้ผ่านการอบรมต่อไปยังโครงการที่ต้องการ skill เฉพาะ',
+    outputs: 'จำนวนผู้จบหลักสูตร · อัตราการนำทักษะไปใช้จริง · รายได้เฉลี่ยที่เพิ่มขึ้น'
+  },
+  {
+    id: 'coffee', label: 'กาแฟชุมชน', short: 'กาแฟ',
+    budget: 21, session: 1, status: 'funded', icon: '☕',
+    summary: 'ต้นแบบสินค้าชุมชนมูลค่าสูง · ขายผ่าน marketplace ของธนาคารกองทุนหมู่บ้าน (ใน/ต่างประเทศ)',
+    detail: 'โครงการ flagship สำหรับสินค้าเกษตรแปรรูป เป็นต้นแบบเชื่อม "ทักษะ → ธุรกิจ → ตลาด"',
+    outputs: 'ปริมาณเมล็ดกาแฟที่ผลิต · มูลค่าส่งออก · ราคารับซื้อที่เกษตรกรได้'
+  },
+  {
+    id: 'urban', label: 'กองทุนชุมชนเมือง', short: 'ชุมชนเมือง',
+    budget: 18.65, session: 1, status: 'funded', icon: '🏙️',
+    summary: 'VF เวอร์ชันสำหรับชุมชนเมือง · ปูทางสู่ธนาคารกองทุนหมู่บ้าน',
+    detail: 'ทำหน้าที่เดียวกับ VF แต่สำหรับบริบทเมือง · เป็นฐานสมาชิกและการเงินส่วนหนึ่งที่จะรวมเข้าสู่ธนาคารกองทุนหมู่บ้านในระยะถัดไป',
+    outputs: 'จำนวนสมาชิกในเมือง · วงเงินสินเชื่อรวม · อัตราชำระคืน'
+  },
+  {
+    id: 'bank', label: 'ธนาคารกองทุนหมู่บ้าน', short: 'Village Bank',
+    budget: null, session: 2, status: 'coming_soon', icon: '🏦',
+    summary: 'ธนาคารกองทุน + แพลตฟอร์มการค้าครบวงจร · Credit Scoring · ลดหนี้นอกระบบ · รองบใหม่',
+    detail: 'ยกระดับกองทุนหมู่บ้านสู่ "ธนาคารกองทุนหมู่บ้าน" + marketplace ขายสินค้าสมาชิก (ใน/ต่างประเทศ) · มีระบบสินเชื่อ · Credit Scoring · ระบบชำระเงิน · ครอบคลุม 7 ระบบงานหลัก (Core Platform, Financial, Lending, Operations, Data & Analytics, Security, Infrastructure) · อ้างอิง พ.ร.บ. กองทุนหมู่บ้านและชุมชนเมืองแห่งชาติ พ.ศ. 2544',
+    outputs: 'สมาชิกในระบบ · มูลค่าธุรกรรม · จำนวน Credit Score ที่ออก · มูลค่าสินเชื่อที่ปล่อยได้ · ลดการพึ่งพาหนี้นอกระบบ'
+  },
+  {
+    id: 'cloud', label: 'Cloud Infrastructure (Agency-Owned)', short: 'Cloud',
+    budget: null, session: 2, status: 'coming_soon', icon: '☁️',
+    summary: 'โครงสร้างพื้นฐานคลาวด์ของ สทบ. เอง · Digital Sovereignty · ลด vendor lock-in · รองบใหม่',
+    detail: 'เปลี่ยนจากเช่าคลาวด์ของผู้รับจ้าง ("Vendor-Owned") เป็นคลาวด์ที่ สทบ. เป็นเจ้าของ ("Agency-Owned") — Enterprise Service Continuity และ Digital Sovereignty · รองรับ Zero Downtime Transition เมื่อเปลี่ยนผู้รับจ้าง · ทรัพย์สินดิจิทัลถาวรขององค์กร · เป็นฐานรองรับทุกระบบของ สทบ. รวมทั้ง Digital Platform และธนาคารกองทุนหมู่บ้าน',
+    outputs: 'Absolute Data Control · Cyber Resilience · TCO ลดลงระยะยาว · Agility & Speed · Centralized Monitoring · PDPA Compliance · Institutional Memory'
+  }
+];
+
+const LINKS = [
+  // Funding flow
+  { source: 'vf',    target: 'skills', type: 'funding',   label: 'เงินทุน → ฝึกทักษะ' },
+  { source: 'vf',    target: 'urban',  type: 'structure', label: 'กองทุนพี่-น้อง' },
+  { source: 'vf',    target: 'bank',   type: 'structure', label: 'ยกระดับสู่ธนาคารกองทุน' },
+  { source: 'vf',    target: 'genz',   type: 'structure', label: 'เวอร์ชันคนรุ่นใหม่' },
+  { source: 'urban', target: 'bank',   type: 'funding',   label: 'รวมการเงินชุมชน' },
+
+  // Skills pipeline
+  { source: 'skills', target: 'coffee', type: 'skills', label: 'นำทักษะไปปฏิบัติ' },
+  { source: 'skills', target: 'genz',   type: 'skills', label: 'ทักษะผู้ประกอบการรุ่นใหม่' },
+
+  // Market — Village Bank marketplace ครอบคลุมการขายในและต่างประเทศ
+  { source: 'bank',   target: 'coffee', type: 'market', label: 'Marketplace ขายสินค้า (ใน/ต่างประเทศ)' },
+  { source: 'bank',   target: 'genz',   type: 'funding', label: 'สินเชื่อ + Credit Scoring สำหรับผู้ประกอบการ' },
+
+  // Platform backbone (Digital connects all software layers)
+  { source: 'digital', target: 'vf',     type: 'platform', label: 'ระบบบริหารกองทุน' },
+  { source: 'digital', target: 'skills', type: 'platform', label: 'LMS' },
+  { source: 'digital', target: 'coffee', type: 'platform', label: 'e-commerce' },
+  { source: 'digital', target: 'urban',  type: 'platform', label: 'ระบบชุมชนเมือง' },
+  { source: 'digital', target: 'genz',   type: 'platform', label: 'แพลตฟอร์มบ่มเพาะ' },
+  { source: 'digital', target: 'bank',   type: 'platform', label: 'Core banking + marketplace' },
+
+  // Cloud foundation (Agency-Owned infrastructure underpins critical systems)
+  { source: 'cloud',   target: 'digital', type: 'structure', label: 'รองรับ software platform' },
+  { source: 'cloud',   target: 'bank',    type: 'structure', label: 'Core banking hosting + PDPA' },
+  { source: 'cloud',   target: 'vf',      type: 'structure', label: 'Digital Sovereignty ของระบบหลัก' }
+];
+
+const EDGE_TYPES = {
+  funding:   { label: 'เงินทุน',    color: 'var(--funding)',   rawColor: '#60a5fa' },
+  skills:    { label: 'ทักษะ',      color: 'var(--skills)',    rawColor: '#fb923c' },
+  market:    { label: 'ตลาด/สินค้า', color: 'var(--market)',    rawColor: '#4ade80' },
+  platform:  { label: 'Platform',   color: 'var(--platform)',  rawColor: '#c084fc' },
+  structure: { label: 'โครงสร้าง',  color: 'var(--structure)', rawColor: '#94a3b8' }
+};
+
+/* ========================================================================
+   LEGEND / FILTER CHIPS
+   ======================================================================== */
+const activeTypes = new Set(Object.keys(EDGE_TYPES));
+const legendEl = document.getElementById('legendChips');
+for (const [key, t] of Object.entries(EDGE_TYPES)) {
+  const chip = document.createElement('div');
+  chip.className = 'chip active';
+  chip.dataset.type = key;
+  chip.innerHTML = `<span class="dot" style="background:${t.rawColor}"></span>${t.label}`;
+  chip.addEventListener('click', () => {
+    if (activeTypes.has(key)) {
+      activeTypes.delete(key);
+      chip.classList.remove('active');
+      chip.classList.add('muted');
+    } else {
+      activeTypes.add(key);
+      chip.classList.add('active');
+      chip.classList.remove('muted');
+    }
+    applyFilter();
+  });
+  legendEl.appendChild(chip);
+}
+
+/* ========================================================================
+   D3 SETUP
+   ======================================================================== */
+const svg = d3.select('#graph');
+const container = svg.append('g');
+
+// Zoom + pan
+const zoom = d3.zoom()
+  .scaleExtent([0.3, 3])
+  .on('zoom', (e) => container.attr('transform', e.transform));
+svg.call(zoom);
+
+function getSize() {
+  const el = svg.node();
+  return { w: el.clientWidth, h: el.clientHeight };
+}
+
+// Scale budget → radius
+const maxBudget = Math.max(...NODES.filter(n => n.budget).map(n => n.budget));
+function radiusOf(n) {
+  if (!n.budget) return 28;
+  return 24 + Math.sqrt(n.budget / maxBudget) * 32;
+}
+function colorOf(n) {
+  if (n.status === 'coming_soon') return '#3a4258';
+  return n.session === 1 ? '#1e3a46' : '#3a2d18';
+}
+function strokeOf(n) {
+  if (n.status === 'coming_soon') return '#64748b';
+  return n.session === 1 ? '#5eead4' : '#f5c26b';
+}
+
+// Prepare data (D3 mutates, so clone)
+let nodeData = NODES.map(n => ({ ...n }));
+let linkData = LINKS.map(l => ({ ...l }));
+
+// Links
+const linkG = container.append('g').attr('class', 'links');
+const edgeLabelG = container.append('g').attr('class', 'edge-labels');
+const nodeG = container.append('g').attr('class', 'nodes');
+
+let linkSel, edgeLabelSel, nodeSel;
+let simulation;
+
+function initGraph() {
+  const { w, h } = getSize();
+
+  linkSel = linkG.selectAll('path')
+    .data(linkData, d => d.source + '-' + d.target)
+    .join('path')
+    .attr('class', 'link')
+    .attr('stroke', d => EDGE_TYPES[d.type].rawColor)
+    .attr('stroke-width', d => d.type === 'platform' ? 1.3 : 1.8)
+    .attr('stroke-dasharray', d => d.type === 'platform' ? '4 4' : null);
+
+  edgeLabelSel = edgeLabelG.selectAll('text')
+    .data(linkData, d => d.source + '-' + d.target)
+    .join('text')
+    .attr('class', 'edge-label')
+    .text(d => d.label);
+
+  nodeSel = nodeG.selectAll('g.node')
+    .data(nodeData, d => d.id)
+    .join(enter => {
+      const g = enter.append('g').attr('class', 'node');
+      g.append('circle')
+        .attr('r', d => radiusOf(d))
+        .attr('fill', d => colorOf(d))
+        .attr('stroke', d => strokeOf(d))
+        .attr('stroke-dasharray', d => d.status === 'coming_soon' ? '4 3' : null);
+      g.append('text')
+        .attr('class', 'icon')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '.35em')
+        .style('font-size', d => `${radiusOf(d) * 0.9}px`)
+        .style('pointer-events', 'none')
+        .text(d => d.icon);
+      g.append('text')
+        .attr('class', 'title')
+        .attr('dy', d => radiusOf(d) + 16)
+        .text(d => d.short);
+      g.append('text')
+        .attr('class', 'budget')
+        .attr('dy', d => radiusOf(d) + 32)
+        .text(d => d.budget ? `${d.budget}M` : 'coming soon');
+      return g;
+    });
+
+  // Interactions
+  nodeSel
+    .on('mouseover', (ev, d) => highlight(d))
+    .on('mouseout', () => unhighlight())
+    .on('click', (ev, d) => { ev.stopPropagation(); openPanel(d); })
+    .call(d3.drag()
+      .on('start', (ev, d) => {
+        if (!ev.active) simulation.alphaTarget(.25).restart();
+        d.fx = d.x; d.fy = d.y;
+      })
+      .on('drag', (ev, d) => { d.fx = ev.x; d.fy = ev.y; })
+      .on('end', (ev, d) => {
+        if (!ev.active) simulation.alphaTarget(0);
+        // Keep pinned where user dropped; uncomment next line to release
+        // d.fx = null; d.fy = null;
+      }));
+
+  // Simulation
+  simulation = d3.forceSimulation(nodeData)
+    .force('link', d3.forceLink(linkData).id(d => d.id).distance(d => d.type === 'platform' ? 130 : 100).strength(.6))
+    .force('charge', d3.forceManyBody().strength(-520))
+    .force('collide', d3.forceCollide().radius(d => radiusOf(d) + 18))
+    .force('center', d3.forceCenter(w / 2, h / 2))
+    .force('x', d3.forceX(w / 2).strength(.05))
+    .force('y', d3.forceY(h / 2).strength(.05))
+    .on('tick', ticked);
+}
+
+function ticked() {
+  linkSel.attr('d', d => {
+    const dx = d.target.x - d.source.x;
+    const dy = d.target.y - d.source.y;
+    const dr = Math.sqrt(dx * dx + dy * dy) * 1.8;
+    return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
+  });
+  edgeLabelSel
+    .attr('x', d => (d.source.x + d.target.x) / 2)
+    .attr('y', d => (d.source.y + d.target.y) / 2 - 4);
+  nodeSel.attr('transform', d => `translate(${d.x},${d.y})`);
+}
+
+/* ========================================================================
+   HIGHLIGHT / FILTER
+   ======================================================================== */
+function highlight(n) {
+  const neighbors = new Set([n.id]);
+  linkData.forEach(l => {
+    if (!activeTypes.has(l.type)) return;
+    if (l.source.id === n.id) neighbors.add(l.target.id);
+    if (l.target.id === n.id) neighbors.add(l.source.id);
+  });
+  nodeSel.classed('hi',  d => neighbors.has(d.id))
+         .classed('dim', d => !neighbors.has(d.id));
+  linkSel.classed('hi',  l => (l.source.id === n.id || l.target.id === n.id) && activeTypes.has(l.type))
+         .classed('dim', l => !(l.source.id === n.id || l.target.id === n.id) || !activeTypes.has(l.type));
+  edgeLabelSel.classed('show', l => (l.source.id === n.id || l.target.id === n.id) && activeTypes.has(l.type));
+}
+function unhighlight() {
+  nodeSel.classed('hi', false).classed('dim', false);
+  linkSel.classed('hi', false);
+  edgeLabelSel.classed('show', false);
+  applyFilter();
+}
+function applyFilter() {
+  linkSel.style('display', d => activeTypes.has(d.type) ? null : 'none');
+  edgeLabelSel.style('display', d => activeTypes.has(d.type) ? null : 'none');
+}
+
+/* ========================================================================
+   DETAIL PANEL
+   ======================================================================== */
+const panelEl = document.getElementById('detailPanel');
+const dpBody  = document.getElementById('dpBody');
+
+function openPanel(n) {
+  // Connections from + to
+  const conns = LINKS.filter(l => (l.source.id || l.source) === n.id || (l.target.id || l.target) === n.id);
+  const connsHtml = conns.map(l => {
+    const srcId = l.source.id || l.source;
+    const tgtId = l.target.id || l.target;
+    const otherId = srcId === n.id ? tgtId : srcId;
+    const other = NODES.find(x => x.id === otherId);
+    const t = EDGE_TYPES[l.type];
+    return `<li style="border-color:${t.rawColor}" onclick="jumpTo('${otherId}')">
+      <span class="conn-label" style="color:${t.rawColor}">${t.label}</span>
+      <span class="conn-target">${other.icon} ${other.label}</span>
+      <span style="color:var(--text-3); font-size:11.5px; display:block; margin-top:3px">${l.label}</span>
+    </li>`;
+  }).join('');
+
+  const sessionPill = n.status === 'coming_soon'
+    ? '<span class="dp-pill coming">Coming soon</span>'
+    : `<span class="dp-pill session-${n.session}">Session ${n.session}</span>`;
+  const budgetPill = n.budget
+    ? `<span class="dp-pill budget">${n.budget.toLocaleString()} ล้านบาท</span>`
+    : '<span class="dp-pill coming">รองบใหม่</span>';
+
+  dpBody.innerHTML = `
+    <div class="dp-icon">${n.icon}</div>
+    <div class="dp-title">${n.label}</div>
+    <div class="dp-meta">${sessionPill}${budgetPill}</div>
+
+    <div class="dp-section">
+      <h4>สรุป</h4>
+      <p>${n.summary}</p>
+    </div>
+
+    <div class="dp-section">
+      <h4>บทบาทใน ecosystem</h4>
+      <p>${n.detail}</p>
+    </div>
+
+    <div class="dp-section">
+      <h4>ผลผลิตหลัก</h4>
+      <p>${n.outputs}</p>
+    </div>
+
+    <div class="dp-section">
+      <h4>ความเชื่อมโยง (${conns.length})</h4>
+      <ul class="dp-connections">${connsHtml}</ul>
+    </div>
+  `;
+  panelEl.classList.add('open');
+}
+
+function closePanel() { panelEl.classList.remove('open'); }
+
+function jumpTo(id) {
+  const n = nodeData.find(x => x.id === id);
+  if (!n) return;
+  openPanel(n);
+  // Optional: gentle pulse highlight
+  highlight(n);
+  setTimeout(unhighlight, 1500);
+}
+
+document.getElementById('graph').addEventListener('click', () => closePanel());
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closePanel();
+  if (e.key === 'r' || e.key === 'R') resetLayout();
+});
+
+/* ========================================================================
+   RESET / RESIZE
+   ======================================================================== */
+function resetLayout() {
+  nodeData.forEach(n => { n.fx = null; n.fy = null; });
+  const { w, h } = getSize();
+  simulation.force('center', d3.forceCenter(w / 2, h / 2));
+  simulation.alpha(1).restart();
+  svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
+}
+document.getElementById('btnReset').addEventListener('click', resetLayout);
+
+window.addEventListener('resize', () => {
+  const { w, h } = getSize();
+  simulation.force('center', d3.forceCenter(w / 2, h / 2)).alpha(.3).restart();
+});
+
+/* ========================================================================
+   BOOT
+   ======================================================================== */
+initGraph();
+</script>
+</body>
+</html>
